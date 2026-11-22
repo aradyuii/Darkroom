@@ -16,7 +16,7 @@ import SwiftUI
 // MARK: - Chemistry
 
 /// What is in the tank. The colours are chemistry colours, not theme accents —
-/// they stay the same in every design language so the liquid always reads as the
+/// they stay the same in both themes so the liquid always reads as the
 /// chemical it is.
 enum PourChemistry: CaseIterable, Identifiable {
     case developer

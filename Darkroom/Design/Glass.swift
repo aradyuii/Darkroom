@@ -16,11 +16,7 @@ struct GlassPanel: ViewModifier {
 
     @ViewBuilder
     func body(content: Content) -> some View {
-        if let style = DLRuntime.activeStyle {
-            content
-                .designLanguage(style)
-                .dlPanel(radius: radius, role: .secondary, tint: tint)
-        } else if appearance.isSoftGlassActive {
+        if appearance.isSoftGlassActive {
             softGlass(content)
         } else {
             glass(content)
@@ -136,34 +132,7 @@ struct AmberCapsuleStyle: ButtonStyle {
 
     @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
-        if let style = DLRuntime.activeStyle {
-            configuration.label
-                .hapticFeedbackOnPress(isPressed: configuration.isPressed)
-                .font(style.body(16, weight: .semibold))
-                .textCase(style.labelCase)
-                .tracking(style.spec.type.labelUppercase ? 0.6 : 0)
-                .foregroundStyle(style.palette.accentInk)
-                .frame(maxWidth: .infinity)
-                .frame(height: height)
-                .background {
-                    style.actionBackground(role: .primary, isPressed: configuration.isPressed)
-                }
-                .clipShape(
-                    RoundedRectangle(
-                        cornerRadius: style.actionRadius >= 999 ? height / 2 : style.actionRadius,
-                        style: .continuous
-                    )
-                )
-                .overlay {
-                    RoundedRectangle(
-                        cornerRadius: style.actionRadius >= 999 ? height / 2 : style.actionRadius,
-                        style: .continuous
-                    )
-                    .strokeBorder(style.palette.line, lineWidth: 1)
-                }
-                .scaleEffect(configuration.isPressed ? 0.985 : 1)
-                .designLanguage(style)
-        } else if appearance.isSoftGlassActive {
+        if appearance.isSoftGlassActive {
             let compact = appearance.compactControls
             configuration.label.hapticFeedbackOnPress(isPressed: configuration.isPressed)
                 .font(.system(size: 17, weight: .semibold))
@@ -220,34 +189,7 @@ struct GlassCapsuleStyle: ButtonStyle {
 
     @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
-        if let style = DLRuntime.activeStyle {
-            configuration.label
-                .hapticFeedbackOnPress(isPressed: configuration.isPressed)
-                .font(style.body(16, weight: .semibold))
-                .textCase(style.labelCase)
-                .tracking(style.spec.type.labelUppercase ? 0.6 : 0)
-                .foregroundStyle(style.palette.ink)
-                .frame(maxWidth: .infinity)
-                .frame(height: height)
-                .background {
-                    style.actionBackground(role: .secondary, isPressed: configuration.isPressed)
-                }
-                .clipShape(
-                    RoundedRectangle(
-                        cornerRadius: style.actionRadius >= 999 ? height / 2 : style.actionRadius,
-                        style: .continuous
-                    )
-                )
-                .overlay {
-                    RoundedRectangle(
-                        cornerRadius: style.actionRadius >= 999 ? height / 2 : style.actionRadius,
-                        style: .continuous
-                    )
-                    .strokeBorder(style.palette.line, lineWidth: 1)
-                }
-                .scaleEffect(configuration.isPressed ? 0.985 : 1)
-                .designLanguage(style)
-        } else if appearance.isSoftGlassActive {
+        if appearance.isSoftGlassActive {
             let compact = appearance.compactControls
             configuration.label.hapticFeedbackOnPress(isPressed: configuration.isPressed)
                 .font(.system(size: 17, weight: .medium))

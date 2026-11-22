@@ -2,7 +2,7 @@
 //  SoftGlassTheme.swift
 //  Darkroom
 //
-//  THE SECOND DESIGN LANGUAGE — "SOFT GLASS".
+//  THE MAIN THEME — SOFT LIGHT.
 //
 //  The field is one continuous mesh gradient, built from the reference art:
 //  mint at the top-left, a warm grey along the top, olive at the right edge, a

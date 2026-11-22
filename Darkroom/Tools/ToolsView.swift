@@ -122,7 +122,7 @@ struct ToolsView: View {
                     } label: {
                         ToolCardBody(
                             title: "Settings",
-                            subtitle: "Appearance, motion and design languages",
+                            subtitle: "Theme, palette and appearance",
                             systemImage: "slider.horizontal.3",
                             accent: lamp[3]
                         )

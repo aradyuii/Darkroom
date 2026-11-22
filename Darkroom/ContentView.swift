@@ -2,20 +2,18 @@
 //  ContentView.swift
 //  Darkroom
 //
-//  The five main tabs. Each tab's own screen lives in its feature folder. While
-//  one of the twelve design languages is on, the whole interface — navigation,
-//  layout and all — is handed to that language's root.
+//  The five main tabs. Each tab's own screen lives in its feature folder, and the
+//  whole interface is drawn by whichever of the two themes is chosen.
 //
 
 import SwiftUI
 
 struct ContentView: View {
     @ObservedObject private var appearance = AppearanceStore.shared
-    @ObservedObject private var languages = ThemeLanguageStore.shared
     @Environment(\.colorScheme) private var colorScheme
 
     /// Held here, outside the re-identified tab stack, so switching the visual
-    /// language never throws the reader back to the first tab.
+    /// theme never throws the reader back to the first tab.
     @State private var selection = 0
 
     private var settingsBinding: Binding<Bool> {
@@ -25,50 +23,14 @@ struct ContentView: View {
         )
     }
 
-    private var appearanceBinding: Binding<Bool> {
-        Binding(
-            get: { languages.isShowingAppearance },
-            set: { languages.isShowingAppearance = $0 }
-        )
-    }
-
     var body: some View {
-        // A ZStack, not a Group: modifiers on a Group are applied to each of its
-        // branches separately, so switching between the native tabs and a theme
-        // root tore down whichever view was presenting the Settings or Appearance
-        // sheet. UIKit then dismissed the sheet without ever writing `false`
-        // back, `isShowingSettings` stayed true, and every later tap on Settings
-        // was a no-op. One stable container owns both sheets for the app's life.
-        ZStack {
-            if languages.isActive {
-                ThemeLanguageRootView()
-                    .transition(.opacity)
-            } else {
-                tabs
-                    .transition(.opacity)
+        tabs
+            .sheet(isPresented: settingsBinding) {
+                SettingsView()
             }
-        }
-        .animation(.easeInOut(duration: 0.28), value: languages.isActive)
-        .sheet(isPresented: settingsBinding) {
-            SettingsView()
-        }
-        .sheet(isPresented: appearanceBinding) {
-            ThemeLanguageAppearanceView()
-        }
-        .onAppear {
-            languages.updateSystemAppearance(isDark: colorScheme == .dark)
-            ThemeLanguageChrome.apply(languages)
-        }
-        .onChange(of: colorScheme) { _, scheme in
-            languages.updateSystemAppearance(isDark: scheme == .dark)
-            ThemeLanguageChrome.apply(languages)
-        }
-        .onChange(of: languages.selected) { _, _ in
-            ThemeLanguageChrome.apply(languages)
-        }
     }
 
-    // MARK: Liquid Glass (the app's own interface)
+    // MARK: The app's own interface
 
     private var tabs: some View {
         ZStack {

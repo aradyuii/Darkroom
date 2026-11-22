@@ -4,8 +4,8 @@
 //
 //  The app-wide visual state that is not a choice of its own: whether the tab
 //  stack must be rebuilt, and whether Settings is on screen. The theme lives in
-//  ThemeLanguageStore, the palette and the other preferences in Preferences;
-//  this store reads them and tells the root when they change.
+//  ThemeStore, the palette and the other preferences in Preferences; this store
+//  reads them and tells the root when they change.
 //
 
 import SwiftUI
@@ -57,11 +57,11 @@ final class AppearanceStore: ObservableObject {
 
     // MARK: Derived
 
-    /// True while the Soft Light theme owns the interface.
-    var isSoftGlassActive: Bool { ThemeLanguageStore.shared.selected == .softLight }
+    /// True while Soft Light, the main theme, owns the interface.
+    var isSoftGlassActive: Bool { ThemeStore.shared.isSoftLight }
 
     /// The compact density shortens the native controls as it tightens the rest.
-    var compactControls: Bool { ThemeLanguageStore.shared.density == .compact }
+    var compactControls: Bool { ThemeStore.shared.compactControls }
 
     /// Re-dresses the app root. Called by every write the native screens read.
     func bumpRevision() {

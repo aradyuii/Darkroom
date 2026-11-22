@@ -129,8 +129,8 @@ enum Units {
 
 // MARK: - Accent
 
-/// The darkroom language's lamp, in the nine lights the bench can be lit with.
-/// The other design languages carry their own.
+/// The app's lamp, in the nine lights the bench can be lit with. Both themes are
+/// lit by it.
 enum AccentChoice: String, CaseIterable, Identifiable {
     case safelight
     case ruby

@@ -42,9 +42,7 @@ struct LiquidBackdrop: View {
         Color.clear
             .overlay {
                 Group {
-                    if let style = DLRuntime.activeStyle {
-                        DLBackgroundView(spec: style.spec, palette: style.palette)
-                    } else if appearance.isSoftGlassActive {
+                    if appearance.isSoftGlassActive {
                         SoftGlassTheme.backdrop(intensity: intensity)
                     } else {
                         darkroomBackdrop

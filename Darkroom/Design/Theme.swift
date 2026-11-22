@@ -2,9 +2,8 @@
 //  Theme.swift
 //  Darkroom
 //
-//  The shared visual language. Every token resolves to the darkroom defaults, to
-//  the soft-glass language's values, or — while one of the twelve design
-//  languages is on — to that language's own palette and type.
+//  The shared visual language. Every token resolves to the darkroom defaults, or
+//  to the main theme's soft-glass values while Soft Light is on.
 //
 
 import SwiftUI
@@ -29,127 +28,88 @@ enum DarkroomThemeDefaults {
 enum Theme {
     private static var store: AppearanceStore { .shared }
 
-    /// True while the soft-glass language owns the interface.
+    /// True while Soft Light, the main theme, owns the interface.
     static var isSoft: Bool { store.isSoftGlassActive }
-
-    /// The active design language's resolved style, when one is on.
-    private static var language: DLStyle? { DLRuntime.activeStyle }
 
     // MARK: Fields
 
     static var base: Color {
-        if let language { return language.palette.field }
-        if isSoft { return SoftGlassTheme.background }
-        return DarkroomThemeDefaults.base
+        isSoft ? SoftGlassTheme.background : DarkroomThemeDefaults.base
     }
 
     static var baseLift: Color {
-        if let language { return language.palette.fieldAlt }
-        if isSoft { return SoftGlassTheme.backgroundLift }
-        return DarkroomThemeDefaults.baseLift
+        isSoft ? SoftGlassTheme.backgroundLift : DarkroomThemeDefaults.baseLift
     }
 
     static var surfaceRaised: Color {
-        if let language { return language.palette.surfaceAlt }
-        if isSoft { return SoftGlassTheme.surfaceRaised }
-        return DarkroomThemeDefaults.raised
+        isSoft ? SoftGlassTheme.surfaceRaised : DarkroomThemeDefaults.raised
     }
 
     // MARK: Inks
 
     static var ink: Color {
-        if let language { return language.palette.ink }
-        if isSoft { return SoftGlassTheme.ink }
-        return DarkroomThemeDefaults.ink
+        isSoft ? SoftGlassTheme.ink : DarkroomThemeDefaults.ink
     }
 
     static var inkSoft: Color {
-        if let language { return language.palette.inkSoft }
-        if isSoft { return SoftGlassTheme.inkSoft }
-        return DarkroomThemeDefaults.inkSoft
+        isSoft ? SoftGlassTheme.inkSoft : DarkroomThemeDefaults.inkSoft
     }
 
     static var inkFaint: Color {
-        if let language { return language.palette.inkFaint }
-        if isSoft { return SoftGlassTheme.inkFaint }
-        return DarkroomThemeDefaults.inkFaint
+        isSoft ? SoftGlassTheme.inkFaint : DarkroomThemeDefaults.inkFaint
     }
 
     static var hairline: Color {
-        if let language { return language.palette.line }
-        if isSoft { return SoftGlassTheme.hairline }
-        return DarkroomThemeDefaults.hairline
+        isSoft ? SoftGlassTheme.hairline : DarkroomThemeDefaults.hairline
     }
 
     static var border: Color {
-        if let language { return language.palette.lineStrong }
-        if isSoft { return SoftGlassTheme.border }
-        return DarkroomThemeDefaults.border
+        isSoft ? SoftGlassTheme.border : DarkroomThemeDefaults.border
     }
 
     // MARK: Accents
 
     static var amber: Color {
-        if let language { return language.palette.accent }
-        if isSoft { return SoftGlassTheme.amber }
-        return Preferences.shared.accent.base
+        isSoft ? SoftGlassTheme.amber : Preferences.shared.accent.base
     }
 
     static var amberSoft: Color {
-        if let language { return language.palette.glow }
-        if isSoft { return SoftGlassTheme.amberSoft }
-        return Preferences.shared.accent.soft
+        isSoft ? SoftGlassTheme.amberSoft : Preferences.shared.accent.soft
     }
 
     static var amberDeep: Color {
-        if let language { return language.palette.glowTwo }
-        if isSoft { return SoftGlassTheme.amberDeep }
-        return Preferences.shared.accent.deep
+        isSoft ? SoftGlassTheme.amberDeep : Preferences.shared.accent.deep
     }
 
     /// Ink that sits on top of the accent block.
     static var amberInk: Color {
-        if let language { return language.palette.accentInk }
-        if isSoft { return SoftGlassTheme.amberInk }
-        return Preferences.shared.accent.ink
+        isSoft ? SoftGlassTheme.amberInk : Preferences.shared.accent.ink
     }
 
     static var accentWash: Color {
-        if let language { return language.palette.accent.opacity(0.14) }
-        if isSoft { return SoftGlassTheme.amber.opacity(0.14) }
-        return amber.opacity(0.13)
+        isSoft ? SoftGlassTheme.amber.opacity(0.14) : Preferences.shared.accent.base.opacity(0.13)
     }
 
     /// The track a switch takes when it is on. White is the soft-glass signal
     /// for *pressable*, not for *on*: a white track around a white knob reads
     /// as one blank pill, so the switch takes a quieter grey there.
     static var switchTint: Color {
-        if let language { return language.palette.accent }
-        if isSoft { return Color(white: 0.58) }
-        return Preferences.shared.accent.base
+        isSoft ? Color(white: 0.58) : Preferences.shared.accent.base
     }
 
-    /// Decorative blooms — only the softer languages use these.
+    /// Decorative blooms. Soft Light pools the chosen lamp's own two lights, so
+    /// the field carries a gradient instead of one flat wash.
     static var magenta: Color {
-        if let language { return language.palette.glow }
-        return isSoft ? Preferences.shared.accent.bloom : Preferences.shared.accent.deep
+        isSoft ? Preferences.shared.accent.bloom : Preferences.shared.accent.deep
     }
 
     static var mint: Color {
-        if let language { return language.palette.glowTwo }
-        return Preferences.shared.accent.soft
+        Preferences.shared.accent.soft
     }
 
     // MARK: Fills
 
     static var amberGradient: LinearGradient {
-        if let language {
-            return LinearGradient(
-                colors: [language.palette.accent, language.palette.glow],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
         if isSoft { return SoftGlassTheme.amberGradient }
         let accent = Preferences.shared.accent
         return LinearGradient(
@@ -160,13 +120,6 @@ enum Theme {
     }
 
     static var panelGradient: LinearGradient {
-        if let language {
-            return LinearGradient(
-                colors: [language.palette.surface, language.palette.surfaceAlt],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        }
         if isSoft { return SoftGlassTheme.panelGradient }
         return LinearGradient(
             colors: [Color.white.opacity(0.10), Color.white.opacity(0.028), Color.black.opacity(0.24)],
@@ -178,11 +131,7 @@ enum Theme {
 
 extension Font {
     /// Tabular figures — every number in the app uses this so digits never jump.
-    /// A design language sets them in its own numeric face.
     static func figures(_ size: CGFloat, weight: Font.Weight = .medium) -> Font {
-        if let language = DLRuntime.activeStyle {
-            return language.figure(size, weight: weight)
-        }
-        return .system(size: size, weight: weight, design: .rounded).monospacedDigit()
+        .system(size: size, weight: weight, design: .rounded).monospacedDigit()
     }
 }

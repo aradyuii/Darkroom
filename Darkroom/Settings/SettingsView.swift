@@ -3,19 +3,18 @@
 //  Darkroom
 //
 //  The Settings sheet: one Appearance entry, where the theme, the palette and the
-//  rest of the look are chosen, and the screens behind units, development
-//  defaults and alerts.
+//  density are chosen, and the screens behind units, development defaults and
+//  alerts.
 //
 
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject private var languages = ThemeLanguageStore.shared
+    @ObservedObject private var theme = ThemeStore.shared
     @ObservedObject private var preferences = Preferences.shared
     @Environment(\.dismiss) private var dismiss
 
     @State private var confirmingReset = false
-    @State private var showingAppearance = false
 
     var body: some View {
         NavigationStack {
@@ -41,9 +40,6 @@ struct SettingsView: View {
         }
         .tint(Theme.amber)
         .preferredColorScheme(.dark)
-        .sheet(isPresented: $showingAppearance) {
-            ThemeLanguageAppearanceView()
-        }
     }
 
     // MARK: Header
@@ -64,17 +60,17 @@ struct SettingsView: View {
 
     // MARK: Appearance
 
-    /// One entry for the whole look: the theme, the palette every theme is lit
-    /// with, brightness, text size, motion and density.
+    /// One entry for the whole look: the theme, the palette both themes are lit
+    /// with and the interface density.
     private var designSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             SettingsSectionHeader(index: "01", title: "Appearance")
 
-            Button {
-                showingAppearance = true
+            NavigationLink {
+                AppearanceView()
             } label: {
                 HStack(spacing: 14) {
-                    Image(systemName: languages.selected.glyph)
+                    Image(systemName: theme.selected.glyph)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(Theme.amber)
                         .frame(width: 26)
@@ -83,7 +79,7 @@ struct SettingsView: View {
                         Text("Theme and palette")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(Theme.ink)
-                        Text("\(languages.selected.name) · \(preferences.accent.title) palette")
+                        Text("\(theme.selected.name) · \(preferences.accent.title) palette")
                             .font(.system(size: 12))
                             .foregroundStyle(Theme.inkSoft)
                             .fixedSize(horizontal: false, vertical: true)
@@ -197,9 +193,9 @@ struct SettingsView: View {
 
     private func resetPreferences() {
         preferences.resetAll()
-        // The theme, density and the rest of the look live in their own store, so
-        // the promise on the reset row is only kept if that store is reset too.
-        ThemeLanguageStore.shared.reset()
+        // The theme and density live in their own store, so the promise on the
+        // reset row is only kept if that store is reset too.
+        ThemeStore.shared.reset()
     }
 
     // MARK: Notes
