@@ -10,22 +10,22 @@
       "formats": ["size135"],
       "status": "current",
       "generation": "kodacolor-100-2025",
-      "generationLabel": "Kodacolor 100, 2025 revival",
-      "latitude": { "value": "−1 / +3", "unit": "stops", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "grain": { "value": "fine", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "grainStructure": { "value": "Fine consumer dye-cloud grain. The revival is cut from an existing Kodak colour negative but Kodak has not named it.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "contrast": { "value": "medium", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
+      "generationLabel": "Kodacolor 100, announced October 2025",
+      "latitude": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grain": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grainStructure": { "value": "Not documented here.", "provenance": { "kind": "unverified" } },
+      "contrast": { "value": "not documented", "provenance": { "kind": "unverified" } },
       "origin": {
-        "kind": "rebrand",
-        "note": "Kodak describes it as made from an existing film stock and does not say which. Comparisons with Gold and UltraMax are photographers' guesses, not a published fact.",
+        "kind": "original",
+        "note": "Announced by Kodak in October 2025. Its parent emulsion is not documented in this library.",
         "provenance": { "kind": "community", "source": "wikipedia-photographic-films" }
       },
-      "history": "Kodacolor was Kodak's consumer colour negative name from the 1960s until Gold took over the range. In September 2025 Eastman Kodak, newly able to sell film under its own name again in the United States and Canada, revived the brand for a 100 and a 200. Both are cut from an existing Kodak stock and sold in 135 only, and because Kodak Alaris kept key trademarks some of these films are now on shelves under two different names at once. It is not the Kodacolor of the 1990s, which the library lists separately.",
+      "history": "Kodacolor was Kodak's consumer colour negative name from 1942. The 1972 to 1980s C-41 Kodacolor films are separate records in this library. Kodak announced a Kodacolor 100 and a Kodacolor 200 in October 2025, both 35 mm C-41 films rated at 100 and 200 speed. Which existing emulsion the 100 is cut from is not documented here.",
       "characteristics": [
-        { "label": "Names", "value": "The same emulsion may be sold under a Kodak Alaris name and an Eastman Kodak name. Check the box, not the habit.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-        { "label": "Format", "value": "135 only. There is no 120 version of the revival.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } }
+        { "label": "Format", "value": "35 mm, as announced.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
+        { "label": "Process", "value": "C-41, as announced.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } }
       ],
-      "notes": "A revived name rather than a revived emulsion. Kodak has been explicit that it is an existing stock; it has not been explicit about which."
+      "notes": "The name is current. The emulsion's origin is not documented."
     },
     {
       "key": "kodak-kodacolor-200-2025",
@@ -36,21 +36,22 @@
       "formats": ["size135"],
       "status": "current",
       "generation": "kodacolor-200-2025",
-      "generationLabel": "Kodacolor 200, 2025 revival",
-      "latitude": { "value": "−2 / +3", "unit": "stops", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "grain": { "value": "fine", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "grainStructure": { "value": "Fine consumer dye-cloud grain, comparable to Gold 200 but not confirmed to be it.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "contrast": { "value": "medium", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
+      "generationLabel": "Kodacolor 200, announced October 2025",
+      "latitude": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grain": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grainStructure": { "value": "Not documented here.", "provenance": { "kind": "unverified" } },
+      "contrast": { "value": "not documented", "provenance": { "kind": "unverified" } },
       "origin": {
-        "kind": "rebrand",
-        "note": "Cut from an existing Kodak colour negative. Kodak has not published which one, and the community identification with Gold 200 is unconfirmed.",
+        "kind": "original",
+        "note": "Announced by Kodak in October 2025. Its parent emulsion is not documented in this library and is not assumed to be Gold 200.",
         "provenance": { "kind": "community", "source": "wikipedia-photographic-films" }
       },
-      "history": "The 200-speed half of the 2025 Kodacolor revival, sold directly by Eastman Kodak after it regained the right to distribute still film under its own brands. It is a cheap, general-purpose colour negative in 135 only, and it is a different film from the 1990s Kodacolor 200 already in the library. Treat any claim about its parent emulsion as unconfirmed.",
+      "history": "Announced with the Kodacolor 100 in October 2025 as a 35 mm C-41 film rated at 200 speed. It is a separate product from the 1980s Kodacolor 200 records in this library, which share its name. Its parent emulsion is not documented here.",
       "characteristics": [
-        { "label": "Process", "value": "C-41, like every Kodak consumer colour negative.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } }
+        { "label": "Format", "value": "35 mm, as announced.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
+        { "label": "Process", "value": "C-41, as announced.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } }
       ],
-      "notes": "Two films called Kodacolor 200 sit thirty years apart in this library. The generation label is what tells them apart."
+      "notes": "Shares a name with the 1980s Kodacolor 200 records. The generation label is what tells them apart."
     },
     {
       "key": "kodak-ultramax-800",
@@ -61,17 +62,16 @@
       "formats": ["size135"],
       "status": "current",
       "generation": "ultramax-800",
-      "generationLabel": "UltraMax 800, 2007–",
-      "latitude": { "value": "−2 / +3", "unit": "stops", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "grain": { "value": "coarse", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "grainStructure": { "value": "Large dye-cloud grain, as an 800-speed consumer film must have; it is the grainiest film in the Kodak consumer range.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "contrast": { "value": "medium", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "history": "UltraMax 800 is Kodak's 800-speed consumer colour negative, sold from 2007. Since 2008 it has been available only inside Kodak single-use cameras, so a loose roll is either old stock or one that was taken out of a disposable. It is in production, which makes it the only current Kodak 800-speed consumer film, but you cannot buy it as a cassette from Kodak.",
+      "generationLabel": "UltraMax 800",
+      "latitude": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grain": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grainStructure": { "value": "Not documented here.", "provenance": { "kind": "unverified" } },
+      "contrast": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "history": "UltraMax 800 is Kodak's 800-speed consumer colour negative. This library does not yet hold a source for its dates or its current availability, so none are stated here.",
       "characteristics": [
-        { "label": "Availability", "value": "Single-use cameras only since 2008. A loose roll is either old stock or salvaged from a disposable.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-        { "label": "Palette", "value": "Bright, saturated consumer colour with natural skin, in the UltraMax house style.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } }
+        { "label": "Availability", "value": "Not documented here.", "provenance": { "kind": "unverified" } }
       ],
-      "notes": "An 800-speed film that most people have only ever shot without knowing it, in a disposable at a wedding."
+      "notes": "Current status and availability have not been checked against a source."
     },
     {
       "key": "kodak-portra-100t",
@@ -82,17 +82,17 @@
       "formats": ["size135", "size120", "sheet4x5"],
       "status": "discontinued",
       "generation": "portra-100t",
-      "generationLabel": "Portra 100T, to the mid-2000s",
-      "latitude": { "value": "−1 / +2", "unit": "stops", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-      "grain": { "value": "very fine", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-      "grainStructure": { "value": "Very fine dye-cloud grain, the same generation of emulsion as the daylight Portra films of its era.", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-      "contrast": { "value": "low", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-      "history": "Portra 100T was the tungsten-balanced member of the original Portra family: colour corrected for about 3200 K so that interiors and night work under incandescent light needed no 80A filter. It was a C-41 film like the rest of the range, with the soft contrast and gentle skin tones Portra is known for, and it disappeared as the professional film market contracted in the 2000s. Shot in daylight without an 85B filter it goes strongly blue, which is exactly what makes it interesting to people who still have a brick.",
+      "generationLabel": "Portra 100T",
+      "latitude": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grain": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grainStructure": { "value": "Not documented here.", "provenance": { "kind": "unverified" } },
+      "contrast": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "history": "Portra 100T is the tungsten-balanced member of the Portra family in this library. Its dates, its balance and its process have not yet been checked against a source, so they are listed as unverified.",
       "characteristics": [
-        { "label": "Balance", "value": "Tungsten, about 3200 K. Daylight needs an 85B filter, or a deliberate blue cast.", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-        { "label": "Process", "value": "C-41 — it is a negative film, not an E-6 slide stock, despite the tungsten balance.", "provenance": { "kind": "community", "source": "massive-dev-chart" } }
+        { "label": "Balance", "value": "Tungsten-balanced, as listed here. Not yet checked against a source.", "provenance": { "kind": "unverified" } },
+        { "label": "Process", "value": "Listed as C-41, a negative film.", "provenance": { "kind": "unverified" } }
       ],
-      "notes": "The one Portra with a colour temperature. Everything else in the family is daylight balanced."
+      "notes": "Listed as tungsten-balanced. The balance is not yet checked against a source."
     },
     {
       "key": "agfaphoto-vista-plus-100",
@@ -104,21 +104,20 @@
       "status": "discontinued",
       "generation": "vista-plus-100",
       "generationLabel": "Vista Plus 100, 2009–2018",
-      "latitude": { "value": "−1 / +3", "unit": "stops", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "grain": { "value": "fine", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "grainStructure": { "value": "Fine Fujifilm dye-cloud grain: this is a Superia emulsion in an AgfaPhoto box.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "contrast": { "value": "medium", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
+      "latitude": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grain": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grainStructure": { "value": "Not documented here.", "provenance": { "kind": "unverified" } },
+      "contrast": { "value": "not documented", "provenance": { "kind": "unverified" } },
       "origin": {
         "kind": "rebrand",
         "stock": "Fujicolor Superia 100",
         "stockFilm": "fujifilm-superia-100",
-        "note": "Lupus Imaging, which licenses the AgfaPhoto brand, bought Fujifilm colour negative when the Ferrania supply ended.",
+        "note": "The published list of discontinued films describes it as a rebranded Fujicolor Superia 100.",
         "provenance": { "kind": "community", "source": "wikipedia-photographic-films" }
       },
-      "history": "After the original Agfa plant in Leverkusen closed, AgfaPhoto colour film was made by Ferrania in Italy. When Ferrania stopped coating in 2009 the brand switched to Fujifilm, and the Vista Plus films are Fujicolor Superia in an AgfaPhoto box. The Fujifilm contract ended in early 2018, which ended colour film under the AgfaPhoto name for good. Vista Plus 100 is Superia 100, cool and green rather than the warm European emulsion the Vista name once meant.",
+      "history": "Vista Plus 100 was sold under the AgfaPhoto name from 2009 to 2018. Ferrania stopped making AgfaPhoto colour film in 2009, and the published list describes Vista Plus 100 as a rebranded Fujicolor Superia 100, made in Japan. Production ended in 2018.",
       "characteristics": [
-        { "label": "What it really is", "value": "Rebranded Fujicolor Superia 100 — a different film from the pre-2005 Agfa Vista 100.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-        { "label": "Palette", "value": "Cool and green-leaning, the Fuji consumer signature, not Agfa's warmth.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } }
+        { "label": "What it really is", "value": "Rebranded Fujicolor Superia 100, per the published list.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } }
       ]
     },
     {
@@ -131,23 +130,22 @@
       "status": "discontinued",
       "generation": "vista-plus-200",
       "generationLabel": "Vista Plus 200, 2009–2018",
-      "latitude": { "value": "−2 / +3", "unit": "stops", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "grain": { "value": "fine", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "grainStructure": { "value": "Fine Fujifilm dye-cloud grain with the fourth colour layer of the Superia generation.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "contrast": { "value": "medium", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
+      "latitude": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grain": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grainStructure": { "value": "Not documented here.", "provenance": { "kind": "unverified" } },
+      "contrast": { "value": "not documented", "provenance": { "kind": "unverified" } },
       "origin": {
         "kind": "rebrand",
         "stock": "Fujicolor Superia 200",
         "stockFilm": "fujifilm-superia-200",
-        "note": "Sold in 24 and 36 exposure rolls and in three-packs; production ended in 2018, with the last stock dated April 2020.",
+        "note": "Sold in 24 and 36 exposure rolls and in three-packs. Production ended in 2018, with the last stock dated April 2020, per the published list.",
         "provenance": { "kind": "community", "source": "wikipedia-photographic-films" }
       },
-      "history": "Vista Plus 200 is Fujicolor Superia 200 with an AgfaPhoto label, sold across Europe from 2009 until the Fujifilm supply contract ended in early 2018. The last stock carried an April 2020 expiry date, so any roll you find now is expired by years even though it was made this century. It is the cheapest and most common way to have shot Superia 200 in Europe, and the reason that film turns up in so many European shoe boxes.",
+      "history": "Vista Plus 200 is listed as a rebranded Fujicolor Superia 200. It was sold in 24 and 36 exposure rolls and in three-packs, production ended in 2018, and the published list gives a last stock expiry of April 2020.",
       "characteristics": [
-        { "label": "What it really is", "value": "Rebranded Fujicolor Superia 200.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-        { "label": "Expired stock", "value": "Production ended in 2018; the final batches were dated April 2020. Expect a green drift and lost speed.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } }
-      ],
-      "notes": "If you have a brick of AgfaPhoto Vista Plus, you have Superia 200 — the film the Fujifilm shelf stopped selling."
+        { "label": "What it really is", "value": "Rebranded Fujicolor Superia 200, per the published list.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
+        { "label": "Expired stock", "value": "Last stock dated April 2020, per the published list.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } }
+      ]
     },
     {
       "key": "agfaphoto-vista-plus-400",
@@ -159,30 +157,30 @@
       "status": "discontinued",
       "generation": "vista-plus-400",
       "generationLabel": "Vista Plus 400, 2009–2018",
-      "latitude": { "value": "−2 / +2", "unit": "stops", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "grain": { "value": "moderate", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "grainStructure": { "value": "Moderate Fujifilm dye-cloud grain, consistent with the Superia 400 emulsion.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-      "contrast": { "value": "medium", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
+      "latitude": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grain": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grainStructure": { "value": "Not documented here.", "provenance": { "kind": "unverified" } },
+      "contrast": { "value": "not documented", "provenance": { "kind": "unverified" } },
       "origin": {
         "kind": "rebrand",
         "stock": "Fujicolor Superia 400 (assumed)",
         "stockFilm": "fujifilm-superia-400-old",
-        "note": "The Fujifilm source for the 400 is assumed rather than documented; the 100 and 200 are documented as Superia.",
+        "note": "The published list says the 400 is assumed to be Fujicolor Superia 400. It is not documented.",
         "provenance": { "kind": "community", "source": "wikipedia-photographic-films" }
       },
-      "history": "The 400-speed member of the AgfaPhoto range Lupus had Fujifilm coat for it between 2009 and 2018. The 100 and the 200 are documented as Superia emulsions; the 400 is assumed to be Superia 400 on the same reasoning, and that assumption is marked here rather than stated as fact. Expired stock behaves like any expired Fuji 400: a magenta-green drift and usable latitude.",
+      "history": "Vista Plus 400 was sold from 2009 to 2018. The published list says it is assumed to be Fujicolor Superia 400. That is not documented, so it stays an assumption here.",
       "characteristics": [
-        { "label": "What it probably is", "value": "Superia 400, by inference from its siblings. Not documented.", "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } }
+        { "label": "What it probably is", "value": "Superia 400, by inference from its siblings. Not documented.", "provenance": { "kind": "unverified" } }
       ]
     }
   ],
   "times": [
-    { "film": "kodak-kodacolor-100-2025", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-    { "film": "kodak-kodacolor-200-2025", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-    { "film": "kodak-ultramax-800", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-    { "film": "kodak-portra-100t", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-    { "film": "agfaphoto-vista-plus-100", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-    { "film": "agfaphoto-vista-plus-200", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } },
-    { "film": "agfaphoto-vista-plus-400", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "community", "source": "wikipedia-photographic-films" } }
+    { "film": "kodak-kodacolor-100-2025", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "unverified" } },
+    { "film": "kodak-kodacolor-200-2025", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "unverified" } },
+    { "film": "kodak-ultramax-800", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "unverified" } },
+    { "film": "kodak-portra-100t", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "unverified" } },
+    { "film": "agfaphoto-vista-plus-100", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "unverified" } },
+    { "film": "agfaphoto-vista-plus-200", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "unverified" } },
+    { "film": "agfaphoto-vista-plus-400", "developer": "c41-press-kit", "dilution": "stock", "celsius": 38, "seconds": 195, "provenance": { "kind": "unverified" } }
   ]
 }

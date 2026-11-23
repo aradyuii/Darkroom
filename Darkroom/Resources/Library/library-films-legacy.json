@@ -251,36 +251,38 @@
       "key": "orwo-np20",
       "manufacturer": "ORWO",
       "name": "NP 20",
-      "iso": 20,
+      "iso": 80,
       "process": "blackAndWhite",
       "formats": ["size135"],
       "status": "discontinued",
       "generation": "np-20",
-      "latitude": { "value": "−1 / +1", "unit": "stops", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-      "grain": { "value": "extremely fine", "unit": "conventional cubic", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-      "grainStructure": { "value": "Very fine East German cubic grain, designed for copying and scientific work.", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-      "contrast": { "value": "high", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-      "history": "ORWO NP 20 was the Wolfen plant's slow, ultra-fine black-and-white film, made for copying and documentation. It was discontinued after German reunification shrank the company. Surviving stock is decades expired and is mostly shot for its period look.",
+      "latitude": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grain": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grainStructure": { "value": "Not documented here. The name says only that it was slower than NP 27.", "provenance": { "kind": "unverified" } },
+      "contrast": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "history": "ORWO NP 20 was the slow black-and-white film of the Wolfen plant, one step below NP 22 and NP 27 in the range. The DX database gives its speed as 80 ASA, so the number in the name is an old East German rating and not ISO 20: an earlier version of this record read it as ISO 20 and described a film that does not exist. It went out of production after German reunification shrank the company.",
       "characteristics": [
-        { "label": "Use", "value": "Copy and documentation work, not handheld photography.", "provenance": { "kind": "community", "source": "massive-dev-chart" } }
+        { "label": "Speed", "value": "80 ASA in the DX database. Not ISO 20.", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
+        { "label": "Use, grain and latitude", "value": "Not documented in this library. The earlier claims about copying work and ultra-fine grain were not sourced.", "provenance": { "kind": "unverified" } }
       ]
     },
     {
       "key": "orwo-np27",
       "manufacturer": "ORWO",
       "name": "NP 27",
-      "iso": 25,
+      "iso": 400,
       "process": "blackAndWhite",
       "formats": ["size135"],
       "status": "discontinued",
       "generation": "np-27",
-      "latitude": { "value": "−1 / +1", "unit": "stops", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-      "grain": { "value": "extremely fine", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-      "grainStructure": { "value": "Very fine cubic grain, slightly faster than NP 20.", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-      "contrast": { "value": "high", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
-      "history": "ORWO NP 27 was a low-speed East German black-and-white film, a stop faster than NP 20 and equally fine-grained. It was used for still photography where resolution mattered and light was plentiful, and it disappeared with the company's contraction in the 1990s.",
+      "generationLabel": "NP 27, 1964 to about 1992",
+      "latitude": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "grain": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "contrast": { "value": "not documented", "provenance": { "kind": "unverified" } },
+      "history": "ORWO NP 27 was the fast black-and-white film of the Wolfen plant's NP range, alongside NP 15, NP 20 and NP 22. The DX database rates it at 400 ASA and the published list of discontinued films gives ISO 400. The number in the name is an old East German rating, not ISO 27. An earlier version of this record read it as ISO 25 and described a slow film with fine grain, neither of which is supported by anything in this library.",
       "characteristics": [
-        { "label": "Expired stock", "value": "Expect fog; rate slowly and develop with a restrainer.", "provenance": { "kind": "community", "source": "massive-dev-chart" } }
+        { "label": "Speed", "value": "400 ASA in the DX database; ISO 400 in the published list. Not ISO 25.", "provenance": { "kind": "community", "source": "massive-dev-chart" } },
+        { "label": "Sensitivity and handling", "value": "Not documented in this library. Earlier claims about extended red sensitivity, an EI 800 rating and a restrainer were not sourced and have been removed.", "provenance": { "kind": "unverified" } }
       ]
     },
     {
