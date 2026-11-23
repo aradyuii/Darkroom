@@ -578,6 +578,23 @@ struct ExpiryEngine: Sendable {
         )
     }
 
+    /// The model's compensation at its mean parameters, in unrounded stops and
+    /// before any logged roll has adjusted it. A logged roll's residual is
+    /// measured against this, so the baseline is never rounded to a third of a
+    /// stop and never carries an earlier roll's correction.
+    func baselineStops(_ request: ExpiryRequest) -> Double {
+        guard request.yearsPastExpiry > 0 else { return 0 }
+        let parameters = model.parameters(for: request.profile, expiryYear: Self.year(of: request.expiration))
+        var generator = ExpirySeededGenerator(seed: request.deterministicSeed)
+        return sample(
+            request: request,
+            parameters: parameters,
+            calibration: .none,
+            variation: .nothing,
+            generator: &generator
+        ).stops
+    }
+
     private func notExpired(
         _ request: ExpiryRequest,
         parameters: ExpiryResolvedParameters,
@@ -601,6 +618,15 @@ struct ExpiryEngine: Sendable {
             )
         }
 
+        // The maker's rating is documented, but it is a rating for storage the
+        // maker expected. Unknown storage lowers the score, and an unlisted stock
+        // with no evidence behind its rating cannot claim documentation at all.
+        var score = ExpiryEvidenceClass.manufacturerDocumented.confidenceCap
+            * (0.5 + 0.5 * request.timeline.certainty)
+        if request.profile.evidence == .assumed {
+            score = Swift.min(score, 0.47)
+        }
+
         return ExpiryEstimate(
             requestedISO: request.iso,
             eiLow: box,
@@ -609,8 +635,8 @@ struct ExpiryEngine: Sendable {
             stops: 0,
             lowStops: 0,
             highStops: 0,
-            confidence: .wellDocumented,
-            confidenceScore: 1,
+            confidence: Self.confidence(for: score),
+            confidenceScore: score,
             explanation: months > 0
                 ? "Not expired: the printed date is about \(months) month\(months == 1 ? "" : "s") away, so the film is still inside the range its maker rates it for. Rate it at box speed, EI \(box)."
                 : "Not expired, so the film is still rated as its maker specifies. Rate it at box speed, EI \(box).",

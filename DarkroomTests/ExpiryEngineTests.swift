@@ -783,4 +783,245 @@ final class ExpiryEngineTests: XCTestCase {
             XCTAssertEqual(first.unit(), second.unit(), accuracy: 1e-15)
         }
     }
+
+    // MARK: - What a logged roll actually says
+
+    private func rolled(
+        _ film: String = "film-a",
+        outcome: ExpiryRollOutcome,
+        box: Int,
+        shot: Int,
+        predicted: Double,
+        recorded: Date = Date(timeIntervalSince1970: 1_700_000_000)
+    ) -> ExpiryCalibrationPoint {
+        ExpiryCalibrationPoint(
+            filmKey: film,
+            group: .consumerColourNegative,
+            ageYears: 12,
+            storage: "Cool room",
+            exposureIndex: shot,
+            boxISO: box,
+            predictedStops: predicted,
+            quality: 5,
+            evidence: .controlled,
+            source: "test",
+            notes: "",
+            outcome: outcome,
+            recorded: recorded
+        )
+    }
+
+    func testAGoodRollAtBoxSpeedIsEvidenceAgainstAPredictionOfMoreLight() {
+        // The model wanted half a stop; the roll was shot at box speed and came
+        // out right. That is half a stop of evidence against the model, not a
+        // no-op, which is what an outcome-only residual would have made it.
+        let point = rolled(outcome: .good, box: 400, shot: 400, predicted: 0.5)
+        XCTAssertEqual(point.shotStops, 0, accuracy: 1e-9)
+        XCTAssertEqual(point.residualStops, -0.5, accuracy: 1e-9)
+    }
+
+    func testAGoodRollAtTheRecommendedIndexIsAZeroResidual() {
+        // EI 283 on a 400 box speed is +0.5 stops, which is exactly what the
+        // model asked for, so a good result there confirms it.
+        let point = rolled(outcome: .good, box: 400, shot: 283, predicted: 0.5)
+        XCTAssertEqual(point.shotStops, 0.5, accuracy: 0.01)
+        XCTAssertEqual(point.residualStops, 0, accuracy: 0.01)
+    }
+
+    func testAnUnderexposedRollAtAnAdjustedIndexSaysHowShortItWas() {
+        // Shot half a stop over box against a prediction of +0.5 and still thin:
+        // the film wanted about a stop, so the model is short by half of one.
+        let point = rolled(outcome: .underexposed, box: 400, shot: 283, predicted: 0.5)
+        XCTAssertEqual(point.residualStops, 0.5, accuracy: 0.01)
+    }
+
+    func testBoxSpeedOnAFilmTheModelWantedMoreLightForMovesDown() {
+        let points = (0..<30).map { _ in
+            rolled(outcome: .good, box: 400, shot: 400, predicted: 0.5)
+        }
+        let adjustment = ExpiryCalibrationAnalyser().adjustment(
+            forFilm: "film-a",
+            group: .consumerColourNegative,
+            points: points
+        )
+        XCTAssertLessThan(
+            adjustment.deltaStops,
+            0,
+            "A good roll at box speed must pull a +0.5 prediction down, not back toward zero"
+        )
+    }
+
+    func testResearchObservationsAreNeverHeldOut() {
+        let research = ExpiryCalibrationPoint(
+            id: "research-x",
+            filmKey: "film-a",
+            group: .consumerColourNegative,
+            ageYears: 12,
+            storage: "Room",
+            exposureIndex: 400,
+            boxISO: 400,
+            predictedStops: 0.5,
+            quality: 4,
+            evidence: .anecdotal,
+            source: "public record",
+            notes: "",
+            outcome: .good,
+            recorded: Date(timeIntervalSince1970: 1_600_000_000)
+        )
+        let own = (0..<3).map { _ in
+            rolled(outcome: .good, box: 400, shot: 400, predicted: 0.5)
+        }
+
+        let loo = ExpiryCalibrationAnalyser().leaveOneOut(
+            filmKey: "film-a",
+            group: .consumerColourNegative,
+            points: own + [research]
+        )
+        XCTAssertEqual(loo.count, 3, "Only the reader's own rolls are validated")
+    }
+
+    func testARecordWrittenBeforeTheBaselineExistedStillDecodes() throws {
+        let json = """
+        [{"id":"old","filmKey":"film-a","group":"consumerColourNegative","ageYears":8,\
+        "storage":"Cool room","exposureIndex":200,"quality":4,"evidence":"personal",\
+        "source":"","notes":"","outcome":"underexposed","recorded":0}]
+        """
+        let decoded = try JSONDecoder().decode([ExpiryCalibrationPoint].self, from: Data(json.utf8))
+
+        XCTAssertEqual(decoded.count, 1, "A missing baseline must not wipe the reader's history")
+        XCTAssertEqual(decoded[0].boxISO, 0)
+        XCTAssertEqual(decoded[0].predictedStops, 0, accuracy: 1e-9)
+        XCTAssertEqual(decoded[0].residualStops, 0.5, accuracy: 1e-9)
+    }
+
+    // MARK: - The store
+
+    private func store(named name: String) -> ExpiryCalibrationStore {
+        let defaults = UserDefaults(suiteName: name) ?? .standard
+        defaults.removePersistentDomain(forName: name)
+        return ExpiryCalibrationStore(defaults: defaults)
+    }
+
+    func testAnUnlistedStockCannotBeLogged() {
+        let calibration = store(named: "darkroom.expiry.unlisted")
+        let stored = calibration.add(rolled("unlisted", outcome: .good, box: 400, shot: 400, predicted: 0.5))
+
+        XCTAssertFalse(stored, "Every unlisted stock shares one key, so its rolls can never be told apart")
+        XCTAssertTrue(calibration.points.isEmpty)
+    }
+
+    func testRollsWithoutABoxSpeedAreKeptButNotFitted() {
+        let calibration = store(named: "darkroom.expiry.legacy")
+        calibration.add(rolled("film-a", outcome: .good, box: 400, shot: 400, predicted: 0.5))
+        var legacy = rolled("film-a", outcome: .underexposed, box: 400, shot: 400, predicted: 0)
+        legacy.boxISO = 0
+        calibration.add(legacy)
+
+        XCTAssertEqual(calibration.points.count, 2, "Nothing that was logged is discarded")
+        XCTAssertEqual(calibration.unmeasuredCount, 1)
+        let fitting = calibration.fittingPoints(model: .standard, film: { _ in nil })
+        XCTAssertFalse(
+            fitting.contains { !$0.isResearch && $0.boxISO == 0 },
+            "A roll with no box speed has no measured residual, so it must not move the answer"
+        )
+        calibration.removeAll()
+    }
+
+    func testDeletingRollsTakesOnlyOneFilm() {
+        let calibration = store(named: "darkroom.expiry.delete")
+        calibration.add(rolled("film-a", outcome: .good, box: 400, shot: 400, predicted: 0.5))
+        calibration.add(rolled("film-b", outcome: .good, box: 400, shot: 400, predicted: 0.5))
+        calibration.add(rolled("film-a", outcome: .overexposed, box: 400, shot: 400, predicted: 0.5))
+
+        calibration.removeAll(forFilm: "film-a")
+
+        XCTAssertEqual(calibration.points.map(\.filmKey), ["film-b"])
+        calibration.removeAll()
+    }
+
+    // MARK: - Storage as a timeline
+
+    func testPeriodsInTheSameTierAreOnePeriod() {
+        let timeline = ExpiryStorageTimeline(segments: [
+            ExpiryStorageSegment(tier: .roomTemperature, fraction: 0.6),
+            ExpiryStorageSegment(tier: .roomTemperature, fraction: 0.4)
+        ])
+
+        XCTAssertEqual(timeline.normalised.count, 1)
+        XCTAssertEqual(timeline.normalised[0].fraction, 1, accuracy: 1e-9)
+        XCTAssertTrue(timeline.isSingleTier)
+        XCTAssertEqual(
+            timeline.certainty,
+            1,
+            accuracy: 1e-9,
+            "Splitting one period in two is not new uncertainty"
+        )
+    }
+
+    func testAddingAPeriodOfTheSameTierCannotMoveTheAnswer() {
+        let subject = engine(samples: 300)
+        let whole = request(profile(), yearsPastExpiry: 12, timeline: .single(.roomTemperature))
+        let split = request(
+            profile(),
+            yearsPastExpiry: 12,
+            timeline: ExpiryStorageTimeline(segments: [
+                ExpiryStorageSegment(tier: .roomTemperature, fraction: 0.5),
+                ExpiryStorageSegment(tier: .roomTemperature, fraction: 0.5)
+            ])
+        )
+
+        XCTAssertEqual(
+            subject.estimate(whole).eiMedian,
+            subject.estimate(split).eiMedian,
+            "An editor that has added a period but not described one must not change the estimate"
+        )
+    }
+
+    // MARK: - Films still inside their date
+
+    func testAnInDateFilmWithUnknownStorageIsNotCalledWellDocumented() {
+        let subject = engine(samples: 200)
+        let known = subject.estimate(
+            request(profile(), yearsPastExpiry: -1, timeline: .single(.coolRoom))
+        )
+        let unknown = subject.estimate(
+            request(profile(), yearsPastExpiry: -1, timeline: .single(.unknown))
+        )
+
+        XCTAssertFalse(known.isExpired)
+        XCTAssertEqual(known.eiMedian, 400)
+        XCTAssertEqual(known.confidence, .wellDocumented)
+        XCTAssertNotEqual(
+            unknown.confidence,
+            .wellDocumented,
+            "Unknown storage cannot read as well documented"
+        )
+        XCTAssertLessThan(unknown.confidenceScore, known.confidenceScore)
+    }
+
+    func testAnUnlistedStockStillInDateIsOnlyAGuess() {
+        let subject = engine(samples: 200)
+        let result = subject.estimate(
+            request(
+                profile(key: "unlisted", evidence: .assumed),
+                yearsPastExpiry: -1,
+                timeline: .single(.coolRoom)
+            )
+        )
+        XCTAssertEqual(result.confidence, .educatedGuess)
+    }
+
+    // MARK: - The notes on screen
+
+    func testTheParameterNoteQuotesTheNumbersTheEngineActuallyUses() throws {
+        let annotation = try XCTUnwrap(
+            ExpiryParameterCatalogue.annotation(id: "radiation-magnitude")
+        )
+        let rate = String(format: "%.4f", ExpiryEngine.baseRadiationFogPerYear)
+        let floor = String(format: "%.4f", ExpiryEngine.minimumRadiationFogPerYear)
+
+        XCTAssertTrue(annotation.note.contains(rate), "The note must quote the deployed rate, \(rate)")
+        XCTAssertTrue(annotation.note.contains(floor), "The note must quote the deployed floor, \(floor)")
+    }
+
 }

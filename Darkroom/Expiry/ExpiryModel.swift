@@ -138,12 +138,22 @@ struct ExpiryStorageTimeline: Codable, Hashable, Sendable {
     }
 
     /// Fractions are renormalised, so a timeline that does not add to one is
-    /// read as proportions rather than rejected.
+    /// read as proportions rather than rejected. Periods in the same tier are
+    /// merged, in the order the tiers first appear: two rows that both say
+    /// "room temperature" are one period of the roll's life, and a reader who
+    /// has just added a second period has not yet told the model anything.
     var normalised: [(tier: ExpiryStorageTier, fraction: Double)] {
         let kept = segments.filter { $0.fraction > 0 }
         let total = kept.reduce(0) { $0 + $1.fraction }
         guard total > 0 else { return [(.unknown, 1)] }
-        return kept.map { ($0.tier, $0.fraction / total) }
+
+        var order: [ExpiryStorageTier] = []
+        var sums: [ExpiryStorageTier: Double] = [:]
+        for segment in kept {
+            if sums[segment.tier] == nil { order.append(segment.tier) }
+            sums[segment.tier, default: 0] += segment.fraction / total
+        }
+        return order.map { ($0, sums[$0] ?? 0) }
     }
 
     var isSingleTier: Bool { normalised.count == 1 }

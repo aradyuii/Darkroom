@@ -19,12 +19,19 @@ struct ExpiryCalculatorView: View {
     @State private var expiryDate = ExpiryCalculatorView.defaultExpiry
     @State private var tier: ExpiryStorageTier = .roomTemperature
     @State private var usesTimeline = false
+    /// Whether the "Where has it been?" disclosure is open. Only the reveal of
+    /// the editor, never the storage the answer is computed from.
+    @State private var timelineExpanded = false
     @State private var segments: [ExpiryStorageSegment] = []
     @State private var estimate: ExpiryEstimate?
     @State private var isRefining = false
     @State private var choosingFilm = false
     @State private var loggedOutcome: ExpiryRollOutcome?
     @State private var loggedQuality = 3
+    /// The exposure index the reader typed for the roll they are logging. Kept as
+    /// text so an empty field stays empty instead of quietly becoming a number.
+    @State private var loggedEI = ""
+    @State private var showingDeleteConfirmation = false
     @State private var showingModelNotes = false
 
     private static let warningInk = Color(red: 1.0, green: 0.62, blue: 0.42)
@@ -110,7 +117,12 @@ struct ExpiryCalculatorView: View {
     }
 
     private var adjustment: ExpiryCalibrationAdjustment {
-        calibration.adjustment(filmKey: profile.filmKey, group: profile.group)
+        calibration.adjustment(
+            filmKey: profile.filmKey,
+            group: profile.group,
+            model: .standard,
+            film: { store.film(key: $0) }
+        )
     }
 
     /// Everything the answer depends on, so the task runs again when any of it
@@ -317,7 +329,7 @@ struct ExpiryCalculatorView: View {
     // MARK: - Multi-period storage
 
     private var timelineDisclosure: some View {
-        DisclosureGroup(isExpanded: $usesTimeline) {
+        DisclosureGroup(isExpanded: $timelineExpanded) {
             VStack(alignment: .leading, spacing: 10) {
                 Text("Most rolls move. Give each stretch of the film's life its share, and the model integrates the temperature exposure across them instead of assuming one room.")
                     .font(.system(size: 12))
@@ -350,13 +362,26 @@ struct ExpiryCalculatorView: View {
 
                 HStack(spacing: 10) {
                     Button {
-                        segments.append(
-                            ExpiryStorageSegment(tier: .roomTemperature, fraction: 0.25)
-                        )
+                        if segments.isEmpty {
+                            // Start from what the reader has already chosen: one
+                            // period covering the whole life at that tier.
+                            // Nothing is invented, and the estimate does not
+                            // move until a tier or a share is edited.
+                            segments = [ExpiryStorageSegment(tier: tier, fraction: 1)]
+                        } else {
+                            segments.append(
+                                ExpiryStorageSegment(tier: tier, fraction: 0.5)
+                            )
+                        }
+                        usesTimeline = true
+                        estimate = nil
                     } label: {
-                        Label("Add a period", systemImage: "plus")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(Theme.amber)
+                        Label(
+                            segments.isEmpty ? "Split the storage" : "Add a period",
+                            systemImage: "plus"
+                        )
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Theme.amber)
                     }
                     .buttonStyle(HapticButtonStyle())
 
@@ -365,6 +390,7 @@ struct ExpiryCalculatorView: View {
                     if segments.count > 1 {
                         Button {
                             segments.removeLast()
+                            estimate = nil
                         } label: {
                             Text("Remove")
                                 .font(.system(size: 13, weight: .medium))
@@ -397,15 +423,6 @@ struct ExpiryCalculatorView: View {
         .tint(Theme.amber)
         .padding(16)
         .glassCard(radius: 20)
-        .onChange(of: usesTimeline) { _, expanded in
-            if expanded, segments.isEmpty {
-                segments = [
-                    ExpiryStorageSegment(tier: tier, fraction: 0.6),
-                    ExpiryStorageSegment(tier: .refrigerator, fraction: 0.4)
-                ]
-            }
-            estimate = nil
-        }
     }
 
     // MARK: - Result
@@ -691,6 +708,36 @@ struct ExpiryCalculatorView: View {
                     .foregroundStyle(Theme.inkFaint)
                     .fixedSize(horizontal: false, vertical: true)
 
+                HStack(spacing: 10) {
+                    Text("EI you shot at")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.inkSoft)
+                    Spacer(minLength: 4)
+                    TextField("EI", text: $loggedEI)
+                        .keyboardType(.numberPad)
+                        .font(.figures(15, weight: .medium))
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(Theme.ink)
+                        .frame(width: 80)
+                }
+
+                Group {
+                    if isUnlisted {
+                        Text("Log this roll from a film in the library. An unlisted stock has no record to calibrate against, so its rolls are not kept.")
+                    } else if let estimate, estimate.isExpired {
+                        Text("This screen suggests EI \(estimate.eiMedian). Log the number you actually set on the meter, even when it is not that one — the record is only worth what it measures.")
+                    } else {
+                        Text("A roll that is still inside its date calibrates nothing: the maker's rating already covers it. Move the date into the past first.")
+                    }
+                }
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.inkFaint)
+                .fixedSize(horizontal: false, vertical: true)
+
+                Text("How did the negatives come out?")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.inkSoft)
+
                 HStack(spacing: 8) {
                     ForEach(ExpiryRollOutcome.allCases) { outcome in
                         Button {
@@ -726,22 +773,7 @@ struct ExpiryCalculatorView: View {
                 }
 
                 Button {
-                    guard let outcome = loggedOutcome, let current = estimate else { return }
-                    calibration.add(
-                        ExpiryCalibrationPoint(
-                            filmKey: profile.filmKey,
-                            group: profile.group,
-                            ageYears: current.ageYears,
-                            storage: timeline.summary,
-                            exposureIndex: current.eiMedian,
-                            quality: loggedQuality,
-                            evidence: .personal,
-                            source: "Logged in the expired-film calculator",
-                            notes: "",
-                            outcome: outcome
-                        )
-                    )
-                    self.loggedOutcome = nil
+                    logRoll()
                 } label: {
                     Text("Log this roll")
                         .font(.system(size: 13, weight: .semibold))
@@ -751,24 +783,42 @@ struct ExpiryCalculatorView: View {
                         .background { Capsule().fill(Theme.amberGradient) }
                 }
                 .buttonStyle(HapticButtonStyle())
-                .disabled(loggedOutcome == nil)
-                .opacity(loggedOutcome == nil ? 0.5 : 1)
+                .disabled(!canLogRoll)
+                .opacity(canLogRoll ? 1 : 0.5)
 
-                let validation = calibration.validation(filmKey: profile.filmKey, group: profile.group)
+                let validation = calibration.validation(
+                    filmKey: profile.filmKey,
+                    group: profile.group,
+                    model: .standard,
+                    film: { store.film(key: $0) }
+                )
                 Text(validationSummary(validation))
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.inkFaint)
                     .fixedSize(horizontal: false, vertical: true)
 
-                if !calibration.points(forFilm: profile.filmKey).isEmpty {
+                if !isUnlisted, !calibration.points(forFilm: profile.filmKey).isEmpty {
                     Button {
-                        calibration.removeAll()
+                        showingDeleteConfirmation = true
                     } label: {
-                        Text("Delete my logged rolls")
+                        Text("Delete my logged rolls for \(profile.displayName)")
                             .font(.system(size: 11))
                             .foregroundStyle(Theme.inkFaint)
                     }
                     .buttonStyle(HapticButtonStyle())
+                    .confirmationDialog(
+                        "Delete every roll logged for \(profile.displayName)?",
+                        isPresented: $showingDeleteConfirmation,
+                        titleVisibility: .visible
+                    ) {
+                        Button("Delete these rolls", role: .destructive) {
+                            calibration.removeAll(forFilm: profile.filmKey)
+                            estimate = nil
+                        }
+                        Button("Keep them", role: .cancel) {}
+                    } message: {
+                        Text("Only the rolls for this film are removed. Rolls logged for other films stay.")
+                    }
                 }
             }
             .padding(.top, 12)
@@ -792,6 +842,48 @@ struct ExpiryCalculatorView: View {
         .glassCard(radius: 20)
     }
 
+    /// An unlisted stock shares one key with every other unlisted stock, so its
+    /// rolls cannot be told apart and are never stored.
+    private var isUnlisted: Bool { profile.filmKey == "unlisted" }
+
+    private var canLogRoll: Bool {
+        guard !isUnlisted, loggedOutcome != nil, estimate?.isExpired == true else { return false }
+        guard let shot = Int(loggedEI.trimmingCharacters(in: .whitespaces)), shot > 0 else { return false }
+        return shot <= 100_000
+    }
+
+    /// Stores the roll against the exposure index the reader actually shot, and
+    /// the model's prediction for the same film, age and storage with no
+    /// adjustment applied. The residual is then measured against that
+    /// prediction, so "good" at box speed on a film the model wanted half a
+    /// stop more for is real evidence against the model, not a no-op.
+    private func logRoll() {
+        guard canLogRoll,
+              let outcome = loggedOutcome,
+              let shot = Int(loggedEI.trimmingCharacters(in: .whitespaces)),
+              estimate != nil else { return }
+
+        calibration.add(
+            ExpiryCalibrationPoint(
+                filmKey: profile.filmKey,
+                group: profile.group,
+                // The engine integrates from the printed date, so the age a
+                // residual is measured at is years past date, not total age.
+                ageYears: max(0, request.yearsPastExpiry),
+                storage: timeline.summary,
+                exposureIndex: shot,
+                boxISO: profile.iso,
+                predictedStops: ExpiryCalculator.baselineStops(request),
+                quality: loggedQuality,
+                evidence: .personal,
+                source: "Logged in the expired-film calculator",
+                notes: "",
+                outcome: outcome
+            )
+        )
+        loggedOutcome = nil
+    }
+
     private func validationSummary(
         _ validation: (error: Double, count: Int, samples: Int, holdoutError: Double, holdoutCount: Int)
     ) -> String {
@@ -803,7 +895,11 @@ struct ExpiryCalculatorView: View {
             parts.append("held-out error over \(validation.holdoutCount) later roll\(validation.holdoutCount == 1 ? "" : "s"): ±\(String(format: "%.2f", validation.holdoutError)) stops")
         }
         if parts.isEmpty {
-            return "No rolls logged yet. Log five or more and the most recent fifth is held back, so the error is measured on rolls the fit has not seen."
+            let older = calibration.unmeasuredCount
+            let caveat = older > 0
+                ? " \(older) older roll\(older == 1 ? " is" : "s are") kept but left out of the fit: it was logged before the box speed was recorded, so its compensation is unknown."
+                : ""
+            return "No rolls logged yet. Log five or more and the most recent fifth is held back, so the error is measured on rolls the fit has not seen." + caveat
         }
         return parts.joined(separator: " · ") + "."
     }

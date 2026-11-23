@@ -93,7 +93,7 @@ model reproduces them, not measured for any film.
 
 **Radiation ageing** is modelled separately and never switched off by cold
 storage. It is `max(floor, base × sensitivity) × years`, with a frozen
-multiplier of 0.8 and a floor of 0.0015 log D per year, so a freezer slows it
+multiplier of 0.8 and a floor of 0.0012 log D per year, so a freezer slows it
 and cannot stop it. ISO informs the sensitivity prior; it is not treated as a
 measurement of it.
 

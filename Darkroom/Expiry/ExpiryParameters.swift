@@ -587,7 +587,7 @@ enum ExpiryParameterCatalogue {
             field: "Radiation fog: rate and floor",
             classification: .assumed,
             sourceKey: "kodak-tib5202",
-            note: "0.0035 log D per year at unit sensitivity, floored at 0.0015, with a frozen multiplier of 0.8. The direction is documented; the size is a prior, because the published record does not separate thermal from radiation fog."
+            note: "\(String(format: "%.4f", ExpiryEngine.baseRadiationFogPerYear)) log D per year at unit sensitivity, floored at \(String(format: "%.4f", ExpiryEngine.minimumRadiationFogPerYear)), with a frozen multiplier of \(String(format: "%.1f", ExpiryEngine.frozenRadiationFactor)). The direction is documented; the size is a prior, because the published record does not separate thermal from radiation fog. These figures are read from the engine's own constants, so the note cannot drift from the arithmetic."
         ),
         ExpiryParameterAnnotation(
             id: "speed-loss",

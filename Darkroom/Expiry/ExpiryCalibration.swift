@@ -38,8 +38,14 @@ enum ExpiryRollOutcome: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// The residual in stops of *needed extra exposure*: positive means the
-    /// film wanted more light than the model suggested.
+    /// The stops of *needed extra exposure* the roll wanted, relative to the
+    /// exposure index it was actually shot at. Positive means the film wanted
+    /// more light than that index gave it.
+    ///
+    /// "Good" is zero against the index that was shot. The residual is taken
+    /// against the model's prediction for the same index, so a good roll rated
+    /// at an adjusted EI is evidence that the adjusted EI was right, and pulls
+    /// the adjustment toward it rather than back toward the baseline.
     var residualStops: Double {
         switch self {
         case .underexposed: return 0.5
@@ -79,10 +85,23 @@ struct ExpiryCalibrationPoint: Codable, Identifiable, Hashable, Sendable {
     var id: String
     var filmKey: String
     var group: ExpiryBehaviourGroup
-    /// How old the film was estimated to be when it was shot.
+    /// Years between the printed date and the day the roll was shot. Not the
+    /// film's total age: the model integrates from the printed date, so this is
+    /// the quantity a residual is measured at.
     var ageYears: Double
     var storage: String
+    /// The exposure index the roll was actually shot at, as the reader set it.
+    /// Never the model's recommendation unless the reader chose that.
     var exposureIndex: Int
+    /// The box speed of the stock the roll came from, so the exposure index can
+    /// be read as stops of compensation. Zero on a record written before this
+    /// was stored, which leaves the shot compensation unknown.
+    var boxISO: Int
+    /// The model's own prediction, in stops of compensation, for this roll's
+    /// age and storage, before any logged roll adjusted it. The residual is
+    /// measured against this, so a good roll at an adjusted EI is evidence
+    /// about the adjustment and not about the baseline.
+    var predictedStops: Double
     /// 1 = barely usable, 5 = a clean, well-scanned negative.
     var quality: Int
     var evidence: ExpiryCalibrationEvidence
@@ -98,6 +117,8 @@ struct ExpiryCalibrationPoint: Codable, Identifiable, Hashable, Sendable {
         ageYears: Double,
         storage: String,
         exposureIndex: Int,
+        boxISO: Int = 0,
+        predictedStops: Double = 0,
         quality: Int,
         evidence: ExpiryCalibrationEvidence = .personal,
         source: String = "",
@@ -111,6 +132,8 @@ struct ExpiryCalibrationPoint: Codable, Identifiable, Hashable, Sendable {
         self.ageYears = ageYears
         self.storage = storage
         self.exposureIndex = exposureIndex
+        self.boxISO = boxISO
+        self.predictedStops = predictedStops
         self.quality = quality
         self.evidence = evidence
         self.source = source
@@ -119,11 +142,64 @@ struct ExpiryCalibrationPoint: Codable, Identifiable, Hashable, Sendable {
         self.recorded = recorded
     }
 
+    private enum CodingKeys: String, CodingKey {
+        case id, filmKey, group, ageYears, storage, exposureIndex
+        case boxISO, predictedStops, quality, evidence, source, notes, outcome, recorded
+    }
+
+    /// Two fields arrived once rolls could already have been logged, so they
+    /// decode with a default rather than failing the whole array and quietly
+    /// wiping the reader's history.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        filmKey = try container.decode(String.self, forKey: .filmKey)
+        group = try container.decode(ExpiryBehaviourGroup.self, forKey: .group)
+        ageYears = try container.decode(Double.self, forKey: .ageYears)
+        storage = try container.decodeIfPresent(String.self, forKey: .storage) ?? ""
+        exposureIndex = try container.decode(Int.self, forKey: .exposureIndex)
+        boxISO = try container.decodeIfPresent(Int.self, forKey: .boxISO) ?? 0
+        predictedStops = try container.decodeIfPresent(Double.self, forKey: .predictedStops) ?? 0
+        quality = try container.decode(Int.self, forKey: .quality)
+        evidence = try container.decode(ExpiryCalibrationEvidence.self, forKey: .evidence)
+        source = try container.decodeIfPresent(String.self, forKey: .source) ?? ""
+        notes = try container.decodeIfPresent(String.self, forKey: .notes) ?? ""
+        outcome = try container.decode(ExpiryRollOutcome.self, forKey: .outcome)
+        recorded = try container.decodeIfPresent(Date.self, forKey: .recorded) ?? Date(timeIntervalSince1970: 0)
+    }
+
     var weight: Double {
         let qualityShare = Double(max(1, min(5, quality))) / 5
         return max(0.05, evidence.weight * qualityShare)
     }
+
+    /// Observations from the public record, identified by their id prefix. They
+    /// inform the fit and are never validated against.
+    var isResearch: Bool { id.hasPrefix("research-") }
+
+    /// The stops of extra exposure the reader actually gave the film by rating
+    /// it slower than box speed. Positive is more light. Zero when the record
+    /// does not carry a box speed, which is all a record written before box
+    /// speed was stored can honestly claim.
+    var shotStops: Double {
+        guard boxISO > 0, exposureIndex > 0 else { return 0 }
+        return log2(Double(boxISO) / Double(exposureIndex))
+    }
+
+    /// What this roll says the model got wrong, in stops. The compensation the
+    /// roll actually needed is what the reader gave it plus whatever the
+    /// negative still lacked; the residual is that, less the compensation the
+    /// model predicted.
+    ///
+    /// So a good roll shot at box speed against a prediction of +0.5 is a
+    /// residual of −0.5 — the model asked for half a stop the film did not
+    /// want — and a good roll shot at the recommended EI is a residual of zero,
+    /// which is what makes logging a roll move the answer at all.
+    var residualStops: Double {
+        shotStops + outcome.residualStops - predictedStops
+    }
 }
+
 
 // MARK: - The adjustment
 
@@ -200,14 +276,14 @@ struct ExpiryCalibrationAnalyser: Sendable {
         let filmPoints = points.filter { $0.filmKey == filmKey }
 
         let groupWeight = groupPoints.reduce(0) { $0 + $1.weight }
-        let groupWeighted = groupPoints.reduce(0) { $0 + $1.weight * $1.outcome.residualStops }
+        let groupWeighted = groupPoints.reduce(0) { $0 + $1.weight * $1.residualStops }
         // Global prior is zero: with no evidence, films age as the group says.
         let groupDelta = groupWeight + groupPriorStrength > 0
             ? groupWeighted / (groupWeight + groupPriorStrength)
             : 0
 
         let filmWeight = filmPoints.reduce(0) { $0 + $1.weight }
-        let filmResidual = filmPoints.reduce(0) { $0 + $1.weight * ($1.outcome.residualStops - groupDelta) }
+        let filmResidual = filmPoints.reduce(0) { $0 + $1.weight * ($1.residualStops - groupDelta) }
         let filmDelta = groupDelta + (filmWeight + filmPriorStrength > 0
             ? filmResidual / (filmWeight + filmPriorStrength)
             : 0)
@@ -248,15 +324,20 @@ struct ExpiryCalibrationAnalyser: Sendable {
         )
     }
 
-    /// Each observation is predicted from the others, never from itself. The
-    /// held-out fits go through `fit` directly, so this is one pass over the
-    /// rolls rather than a fit that re-validates inside every fold.
+    /// Each of the reader's own rolls is predicted from the others, never from
+    /// itself. Observations from the public record are never held out — they are
+    /// not the reader's rolls and nobody is being told they predicted their own
+    /// result — but they stay in the set that predicts, because they are part of
+    /// the model the reader actually gets and holding them out would measure a
+    /// different, thinner model. The held-out fits go through `fit` directly, so
+    /// this is one pass over the rolls rather than a fit that re-validates
+    /// inside every fold.
     func leaveOneOut(
         filmKey: String,
         group: ExpiryBehaviourGroup,
         points: [ExpiryCalibrationPoint]
     ) -> (error: Double, count: Int) {
-        let own = points.filter { $0.filmKey == filmKey }
+        let own = points.filter { $0.filmKey == filmKey && !$0.isResearch }
         guard own.count >= 2 else { return (0, 0) }
 
         var total = 0.0
@@ -264,13 +345,14 @@ struct ExpiryCalibrationAnalyser: Sendable {
         for point in own {
             let remaining = points.filter { $0.id != point.id }
             let prediction = fit(forFilm: filmKey, group: group, points: remaining)?.deltaStops ?? 0
-            total += abs(point.outcome.residualStops - prediction)
+            total += abs(point.residualStops - prediction)
             count += 1
         }
         guard count > 0 else { return (0, 0) }
         return (total / Double(count), count)
     }
 }
+
 
 // MARK: - Store
 
@@ -287,23 +369,55 @@ final class ExpiryCalibrationStore: ObservableObject {
 
     /// Observations gathered from the public record while the model was built.
     /// They inform the fitted behaviour and are never used for validation:
-    /// leave-one-out runs over the reader's own rolls only.
+    /// leave-one-out runs over the reader's own rolls only. The prediction is
+    /// not typed in here: `researchPoints(model:)` fills it in from the running
+    /// model, so the residual is measured against what the model says.
     static let researchObservations: [ExpiryCalibrationPoint] = [
         ExpiryCalibrationPoint(
             id: "research-tmax-100-2009",
             filmKey: "kodak-t-max-100",
             group: .slowModernBW,
-            ageYears: 15,
+            ageYears: 17,
             storage: "Room temperature, sealed in its canister",
             exposureIndex: 100,
+            boxISO: 100,
             quality: 4,
             evidence: .anecdotal,
             source: "Reported by the app's owner: a roll dated 2009, stored at room temperature, gave solid results at box speed.",
-            notes: "A single anecdote. It supports T-Max 100 keeping well; it does not establish why, and it is weighed well below a measured series.",
+            notes: "A single anecdote about a roll dated 2009, shot 17 years later at box speed. It is weighed as one anecdote, not as a measured series — and because it was shot at box speed while the model predicts compensation at that age, its residual is not zero.",
             outcome: .good,
             recorded: Date(timeIntervalSince1970: 1_770_000_000)
         )
     ]
+
+    /// The research points with their prediction taken from the model, so the
+    /// residual is measured against what the model actually says for that film,
+    /// age and storage, and not against a number typed in by hand. The film is
+    /// read from the library, the same path the calculator uses. A point whose
+    /// film is not in the library keeps a prediction of zero and is not used.
+    static func researchPoints(model: ExpiryModel, film: (String) -> LibraryFilm?) -> [ExpiryCalibrationPoint] {
+        researchObservations.map { point in
+            var filled = point
+            guard let libraryFilm = film(point.filmKey) else { return filled }
+            let profile = model.profile(for: libraryFilm)
+            // The roll was shot on the day the observation was recorded, and
+            // `ageYears` is how far past its printed date it already was.
+            let anchor = point.recorded
+            let expiration = ExpiryEngine.utcCalendar.date(
+                byAdding: .year,
+                value: -Int(point.ageYears.rounded()),
+                to: anchor
+            ) ?? anchor
+            let request = ExpiryRequest(
+                profile: profile,
+                expiration: expiration,
+                timeline: .single(.roomTemperature),
+                now: anchor
+            )
+            filled.predictedStops = ExpiryCalculator.baselineStops(request, model: model)
+            return filled
+        }
+    }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -314,8 +428,6 @@ final class ExpiryCalibrationStore: ObservableObject {
             points = []
         }
     }
-
-    var allPoints: [ExpiryCalibrationPoint] { points + Self.researchObservations }
 
     /// Rolls are split by date: the most recent fifth is held out and never used
     /// for fitting, so the reported hold-out error is measured on data the fit
@@ -331,19 +443,41 @@ final class ExpiryCalibrationStore: ObservableObject {
         return (Array(sorted.dropLast(held)), Array(sorted.suffix(held)))
     }
 
-    /// What the model is fitted on: the reader's older rolls, plus the
-    /// observations from the public record.
-    var fittingPoints: [ExpiryCalibrationPoint] {
-        Self.split(points).fitting + Self.researchObservations
+    /// Rolls that can be measured: those logged with the box speed they were
+    /// shot against. A roll stored before box speed was recorded has no known
+    /// compensation, so its residual would be a guess. It stays in the store and
+    /// is counted, but it is never fitted or validated against.
+    static func measurable(_ points: [ExpiryCalibrationPoint]) -> [ExpiryCalibrationPoint] {
+        points.filter { $0.boxISO > 0 }
+    }
+
+    /// What the model is fitted on: the reader's older measurable rolls, plus
+    /// the public observations with their predictions taken from the model.
+    func fittingPoints(model: ExpiryModel, film: (String) -> LibraryFilm?) -> [ExpiryCalibrationPoint] {
+        Self.split(Self.measurable(points)).fitting + Self.researchPoints(model: model, film: film)
     }
 
     /// What it is checked against, and never fitted on.
     var holdoutPoints: [ExpiryCalibrationPoint] {
-        Self.split(points).validation
+        Self.split(Self.measurable(points)).validation
     }
 
-    func adjustment(filmKey: String, group: ExpiryBehaviourGroup) -> ExpiryCalibrationAdjustment {
-        analyser.adjustment(forFilm: filmKey, group: group, points: fittingPoints)
+    /// Logged rolls that cannot be used because they predate the box-speed field.
+    var unmeasuredCount: Int {
+        points.count - Self.measurable(points).count
+    }
+
+    func adjustment(
+        filmKey: String,
+        group: ExpiryBehaviourGroup,
+        model: ExpiryModel = .standard,
+        film: (String) -> LibraryFilm? = { _ in nil }
+    ) -> ExpiryCalibrationAdjustment {
+        analyser.adjustment(
+            forFilm: filmKey,
+            group: group,
+            points: fittingPoints(model: model, film: film)
+        )
     }
 
     func points(forFilm filmKey: String) -> [ExpiryCalibrationPoint] {
@@ -354,29 +488,47 @@ final class ExpiryCalibrationStore: ObservableObject {
     /// the held-out rolls when there are enough of them to hold any back.
     func validation(
         filmKey: String,
-        group: ExpiryBehaviourGroup
+        group: ExpiryBehaviourGroup,
+        model: ExpiryModel = .standard,
+        film: (String) -> LibraryFilm? = { _ in nil }
     ) -> (error: Double, count: Int, samples: Int, holdoutError: Double, holdoutCount: Int) {
-        let fitSet = fittingPoints
+        let fitSet = fittingPoints(model: model, film: film)
         let loo = analyser.leaveOneOut(filmKey: filmKey, group: group, points: fitSet)
 
         let held = holdoutPoints.filter { $0.filmKey == filmKey }
         var holdoutError = 0.0
         if !held.isEmpty,
            let base = analyser.fit(forFilm: filmKey, group: group, points: fitSet)?.deltaStops {
-            let total = held.reduce(0) { $0 + abs($1.outcome.residualStops - base) }
+            let total = held.reduce(0) { $0 + abs($1.residualStops - base) }
             holdoutError = total / Double(held.count)
         }
 
         return (loo.error, loo.count, points(forFilm: filmKey).count, holdoutError, held.count)
     }
 
-    func add(_ point: ExpiryCalibrationPoint) {
+    /// An unlisted stock shares one key with every other unlisted stock, so a
+    /// roll logged against it could never be told apart from any other. It is
+    /// refused here as well as in the screen, so nothing can store one.
+    static let unlistedFilmKey = "unlisted"
+
+    @discardableResult
+    func add(_ point: ExpiryCalibrationPoint) -> Bool {
+        guard !point.filmKey.isEmpty, point.filmKey != Self.unlistedFilmKey else { return false }
         points.append(point)
         persist()
+        return true
     }
 
     func remove(id: String) {
         points.removeAll { $0.id == id }
+        persist()
+    }
+
+    /// Every roll logged for one film, and nothing for any other. A film with
+    /// rolls logged has its own record to clear; "delete my rolls" must never
+    /// take the rest of the library's with it.
+    func removeAll(forFilm filmKey: String) {
+        points.removeAll { $0.filmKey == filmKey }
         persist()
     }
 
@@ -416,5 +568,13 @@ enum ExpiryCalculator {
             fullEngine.estimate(request, calibration: calibration)
         }
         .value
+    }
+
+    /// The model's compensation at its mean parameters, in unrounded stops, with
+    /// no logged roll adjusting it. A logged roll's residual is measured against
+    /// this rather than against the number the screen shows, so the record keeps
+    /// its footing when a later roll moves the answer.
+    static func baselineStops(_ request: ExpiryRequest, model: ExpiryModel = .standard) -> Double {
+        ExpiryEngine(model: model, sampleCount: 1).baselineStops(request)
     }
 }
