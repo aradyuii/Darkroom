@@ -149,7 +149,6 @@ final class ThemeStore: ObservableObject {
             selected = choice
         }
         defaults.set(choice.rawValue, forKey: Keys.choice)
-        AppearanceStore.shared.bumpRevision()
         Haptics.impact(.light)
     }
 
@@ -157,8 +156,6 @@ final class ThemeStore: ObservableObject {
         guard value != density else { return }
         density = value
         defaults.set(value.rawValue, forKey: Keys.density)
-        // The native controls read density too, so their tab stack is re-dressed.
-        AppearanceStore.shared.bumpRevision()
     }
 
     func reset() {
@@ -169,6 +166,5 @@ final class ThemeStore: ObservableObject {
 
         selected = .softLight
         density = .regular
-        AppearanceStore.shared.bumpRevision()
     }
 }

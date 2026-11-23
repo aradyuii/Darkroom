@@ -154,7 +154,27 @@ struct DotMatrixDigits: View {
 // MARK: - Small circular action
 
 /// The thin outlined circle the reference uses for back, close and secondary
-/// actions.
+/// actions. Drawn on its own so a navigation link can wear the same disc as a
+/// button without either one copying the other's styling.
+struct SoftGlassIconDisc: View {
+    let systemImage: String
+    var size: CGFloat = 40
+
+    var body: some View {
+        Image(systemName: systemImage)
+            .font(.system(size: size * 0.34, weight: .semibold))
+            .foregroundStyle(Color.white.opacity(0.9))
+            .frame(width: size, height: size)
+            .background {
+                Circle().fill(.ultraThinMaterial)
+                Circle().fill(Color.white.opacity(0.07))
+            }
+            .overlay {
+                Circle().strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
+            }
+    }
+}
+
 struct SoftGlassIconButton: View {
     let systemImage: String
     var size: CGFloat = 40
@@ -162,17 +182,7 @@ struct SoftGlassIconButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: size * 0.34, weight: .semibold))
-                .foregroundStyle(Color.white.opacity(0.9))
-                .frame(width: size, height: size)
-                .background {
-                    Circle().fill(.ultraThinMaterial)
-                    Circle().fill(Color.white.opacity(0.07))
-                }
-                .overlay {
-                    Circle().strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
-                }
+            SoftGlassIconDisc(systemImage: systemImage, size: size)
         }
         .buttonStyle(HapticButtonStyle())
     }

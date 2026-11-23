@@ -31,9 +31,9 @@ struct SoftGlassTabBar: View {
     @Binding var selection: Int
 
     /// The dock's full height — icon row, its own vertical padding and the
-    /// small lift above the home indicator. The edge fade behind it is sized
-    /// from this, so keep the two in step if the layout changes.
-    static let height: CGFloat = 64
+    /// lift above the home indicator. The edge fade behind it is sized from
+    /// this, so keep the two in step if the layout changes.
+    static let height: CGFloat = 84
 
     /// One disc for the whole dock, so it slides between tabs instead of
     /// blinking off in one place and on in another.
@@ -51,9 +51,9 @@ struct SoftGlassTabBar: View {
                     }
                 } label: {
                     Image(systemName: tab.symbol)
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(selected ? Color.black : Color.white.opacity(0.55))
-                        .frame(width: 48, height: 48)
+                        .frame(width: 50, height: 50)
                         .background {
                             if selected {
                                 Circle()
@@ -68,8 +68,8 @@ struct SoftGlassTabBar: View {
                 .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 7)
         .background {
             Capsule().fill(.ultraThinMaterial)
             Capsule().fill(Color.white.opacity(0.06))
@@ -78,7 +78,7 @@ struct SoftGlassTabBar: View {
             Capsule().strokeBorder(Color.white.opacity(0.13), lineWidth: 1)
         }
         .shadow(color: .black.opacity(0.30), radius: 14, x: 0, y: 8)
-        .padding(.bottom, 4)
+        .padding(.bottom, 20)
         .accessibilityElement(children: .contain)
     }
 }
@@ -95,6 +95,9 @@ enum SoftGlassBarMetrics {
 /// circle at the leading edge, a centred small title, an optional action.
 struct SoftGlassTopBar<Accessory: View>: View {
     let title: String
+    /// False until the screen has actually scrolled. The fade is drawn only then,
+    /// so the top of a page is never blurred before anything has moved under it.
+    var showsFade: Bool = true
     let accessory: Accessory
 
     var body: some View {
@@ -114,6 +117,8 @@ struct SoftGlassTopBar<Accessory: View>: View {
         .frame(maxWidth: .infinity)
         .background(alignment: .top) {
             TopEdgeFade()
+                .opacity(showsFade ? 1 : 0)
+                .animation(.easeInOut(duration: 0.20), value: showsFade)
         }
         .accessibilityAddTraits(.isHeader)
     }
@@ -166,14 +171,27 @@ struct SoftGlassNavigationChrome<Accessory: View>: ViewModifier {
 
     @ObservedObject private var appearance = AppearanceStore.shared
 
+    /// True once the content has moved under the header. The header's fade is
+    /// held back until then, so a page at rest is not blurred at the top.
+    @State private var hasScrolled = false
+
     @ViewBuilder
     func body(content: Content) -> some View {
         if appearance.isSoftGlassActive {
             content
+                .onScrollGeometryChange(for: Bool.self) { geometry in
+                    // The offset at rest is minus the top inset, so adding the
+                    // inset back gives zero until the reader scrolls.
+                    geometry.contentOffset.y + geometry.contentInsets.top > 0.5
+                } action: { _, scrolled in
+                    withAnimation(.easeInOut(duration: 0.20)) {
+                        hasScrolled = scrolled
+                    }
+                }
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar(.hidden, for: .navigationBar)
                 .safeAreaInset(edge: .top, spacing: 0) {
-                    SoftGlassTopBar(title: title, accessory: accessory)
+                    SoftGlassTopBar(title: title, showsFade: hasScrolled, accessory: accessory)
                 }
         } else {
             content.navigationTitle(title)
@@ -195,12 +213,23 @@ struct AppNavigationChrome<Accessory: View>: ViewModifier {
     /// stays sharp.
     @State private var bottomInset: CGFloat = 0
 
+    /// True once the content has moved under the header, so the top fade can
+    /// arrive with the scroll instead of blurring a page at rest.
+    @State private var hasScrolled = false
+
     @ViewBuilder
     func body(content: Content) -> some View {
         if appearance.isSoftGlassActive {
             content.softGlassNavigationChrome(title: title) { accessory }
         } else {
             content
+                .onScrollGeometryChange(for: Bool.self) { geometry in
+                    geometry.contentOffset.y + geometry.contentInsets.top > 0.5
+                } action: { _, scrolled in
+                    withAnimation(.easeInOut(duration: 0.20)) {
+                        hasScrolled = scrolled
+                    }
+                }
                 .navigationTitle(title)
                 .background {
                     GeometryReader { proxy in
@@ -217,6 +246,8 @@ struct AppNavigationChrome<Accessory: View>: ViewModifier {
                         color: Theme.base,
                         height: ScreenInsets.top + 96
                     )
+                    .opacity(hasScrolled ? 1 : 0)
+                    .animation(.easeInOut(duration: 0.20), value: hasScrolled)
                     .ignoresSafeArea(edges: .top)
                 }
                 // Bottom-aligned inside the safe area, the band's extra height

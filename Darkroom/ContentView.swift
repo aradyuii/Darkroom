@@ -10,24 +10,13 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject private var appearance = AppearanceStore.shared
-    @Environment(\.colorScheme) private var colorScheme
 
-    /// Held here, outside the re-identified tab stack, so switching the visual
-    /// theme never throws the reader back to the first tab.
+    /// Held here, outside the tab stack, so nothing that redraws the interface
+    /// can throw the reader back to the first tab.
     @State private var selection = 0
-
-    private var settingsBinding: Binding<Bool> {
-        Binding(
-            get: { appearance.isShowingSettings },
-            set: { appearance.isShowingSettings = $0 }
-        )
-    }
 
     var body: some View {
         tabs
-            .sheet(isPresented: settingsBinding) {
-                SettingsView()
-            }
     }
 
     // MARK: The app's own interface
@@ -76,7 +65,6 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity)
                 }
             }
-            .id(appearance.revision)
         }
         .buttonStyle(HapticButtonStyle())
         .preferredColorScheme(.dark)

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ToolsView: View {
-    @ObservedObject private var appearance = AppearanceStore.shared
     @ObservedObject private var preferences = Preferences.shared
 
     /// The four lights of the chosen palette. Every tool card takes one, so the
@@ -117,17 +116,13 @@ struct ToolsView: View {
                         )
                     }
 
-                    Button {
-                        appearance.presentSettings()
-                    } label: {
-                        ToolCardBody(
-                            title: "Settings",
-                            subtitle: "Theme, palette and appearance",
-                            systemImage: "slider.horizontal.3",
-                            accent: lamp[3]
-                        )
-                    }
-                    .buttonStyle(HapticButtonStyle())
+                    ToolLaunchCard(
+                        title: "Settings",
+                        subtitle: "Theme, palette and appearance",
+                        systemImage: "slider.horizontal.3",
+                        accent: lamp[3],
+                        destination: SettingsView()
+                    )
                 }
                 .padding(20)
                 .padding(.bottom, 24)

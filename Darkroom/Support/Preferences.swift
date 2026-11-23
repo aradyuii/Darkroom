@@ -485,13 +485,11 @@ final class Preferences: ObservableObject {
     func setTemperatureScale(_ scale: TemperatureScale) {
         temperatureScale = scale
         defaults.set(scale.rawValue, forKey: Keys.temperatureScale)
-        AppearanceStore.shared.bumpRevision()
     }
 
     func setVolumeUnit(_ unit: VolumeUnit) {
         volumeUnit = unit
         defaults.set(unit.rawValue, forKey: Keys.volumeUnit)
-        AppearanceStore.shared.bumpRevision()
     }
 
     func setAgitationScheme(_ scheme: AgitationScheme) {
@@ -554,7 +552,6 @@ final class Preferences: ObservableObject {
     func setAccent(_ choice: AccentChoice) {
         accent = choice
         defaults.set(choice.rawValue, forKey: Keys.accent)
-        AppearanceStore.shared.bumpRevision()
     }
 
     // MARK: Events
@@ -598,8 +595,6 @@ final class Preferences: ObservableObject {
         }
         sounds = soundValues
         haptics = hapticValues
-
-        AppearanceStore.shared.bumpRevision()
     }
 
     // MARK: Defaults

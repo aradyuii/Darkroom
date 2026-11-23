@@ -2,58 +2,41 @@
 //  Appearance.swift
 //  Darkroom
 //
-//  The app-wide visual state that is not a choice of its own: whether the tab
-//  stack must be rebuilt, and whether Settings is on screen. The theme lives in
-//  ThemeStore, the palette and the other preferences in Preferences; this store
-//  reads them and tells the root when they change.
+//  The app-wide visual state that is not a choice of its own: the one object
+//  every screen observes to be redrawn when the theme or the palette changes.
+//  The theme lives in ThemeStore, the palette and the other preferences in
+//  Preferences; this store listens to both and passes their changes on, so
+//  nothing has to be rebuilt to be re-dressed.
 //
 
+import Combine
 import SwiftUI
 
-/// Publishes the revision the app root re-dresses itself on. Writes that the
-/// native tab stack reads bump it, so the stack is rebuilt with the new look.
 final class AppearanceStore: ObservableObject {
     static let shared = AppearanceStore()
 
-    @Published private(set) var revision: Int = 0
+    private var forwarding: Set<AnyCancellable> = []
 
-    /// Set by the Tools hub and the Develop header; the app root presents
-    /// Settings as a sheet so the tabs behind it can be rebuilt without tearing
-    /// down the screen.
-    @Published var isShowingSettings = false {
-        didSet {
-            guard oldValue != isShowingSettings else { return }
-            if !isShowingSettings {
-                if skipNextRevision {
-                    skipNextRevision = false
-                } else {
-                    bumpRevision()
-                }
+    private init() {
+        // Every screen reads its colours through `Theme`, which resolves the
+        // theme and the palette from these two stores. Forwarding their changes
+        // here is what redraws the app when either is written. It replaces the
+        // old `revision` counter, which was applied to the tab stack as an
+        // `.id`: that re-identified the whole hierarchy on every accent, unit,
+        // theme and density write, throwing every tab back to its root screen
+        // and cancelling any touch already in flight.
+        ThemeStore.shared.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
             }
-        }
+            .store(in: &forwarding)
+
+        Preferences.shared.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &forwarding)
     }
-
-    /// Set while a stale presentation flag is being cleared, so the reset is not
-    /// mistaken for the reader closing Settings.
-    private var skipNextRevision = false
-
-    /// The one way to open Settings. A reader can only tap an entry while no
-    /// sheet covers the screen, so if the flag still says Settings is showing it
-    /// is stale; clear it, then raise it again on the next turn so the sheet is
-    /// presented rather than the tap doing nothing.
-    func presentSettings() {
-        guard isShowingSettings else {
-            isShowingSettings = true
-            return
-        }
-        skipNextRevision = true
-        isShowingSettings = false
-        DispatchQueue.main.async { [weak self] in
-            self?.isShowingSettings = true
-        }
-    }
-
-    private init() {}
 
     // MARK: Derived
 
@@ -62,9 +45,4 @@ final class AppearanceStore: ObservableObject {
 
     /// The compact density shortens the native controls as it tightens the rest.
     var compactControls: Bool { ThemeStore.shared.compactControls }
-
-    /// Re-dresses the app root. Called by every write the native screens read.
-    func bumpRevision() {
-        revision &+= 1
-    }
 }

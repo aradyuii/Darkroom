@@ -152,25 +152,27 @@ would confirm it, that is the first thing to run.
 
 ## 7. Settings stopped opening after a theme change (bug)
 
-`ContentView.swift`, `Design/Appearance.swift`, `Languages/DesignLanguage.swift`,
-`Languages/DesignLanguageRootView.swift`
+`ContentView.swift`, `Design/Appearance.swift`, `Settings/SettingsView.swift`
 
 `ContentView` hung its Settings sheet on a `Group` whose content switched between
 `tabs` and `ThemeLanguageRootView`. Modifiers on a `Group` are applied to each
 branch, so a theme change across that boundary removed the view presenting the
 sheet. The sheet was dismissed by the system without the binding being written
 back, `AppearanceStore.isShowingSettings` stayed `true`, and every later
-`isShowingSettings = true` changed nothing. `ThemeLanguageRootView` had the same
-shape for the Appearance sheet and `isShowingAppearance`.
+`isShowingSettings = true` changed nothing.
 
-- One stable `ZStack` now owns both the Settings and the Appearance sheet.
-- `presentSettings()` and `presentAppearance()` clear a stale flag and raise it
-  again on the next turn, so a leftover `true` can no longer swallow a tap. The
-  reset is not counted as the reader closing Settings, so it does not rebuild the
-  tab stack.
+That sheet is gone. Settings is now an ordinary pushed screen, reached from the
+disc in the Develop header and from the Tools hub, so it travels the same
+navigation path as every other screen in the app and has no presentation state
+that can go stale. `AppearanceStore` no longer carries a presentation flag.
 
-To confirm: switch Darkroom → any other theme → Settings; switch back → Settings;
-repeat from the Appearance sheet opened by a theme's own gear button.
+The tab stack is no longer re-identified either: `AppearanceStore` forwards the
+theme and preference stores' changes through `objectWillChange` instead of a
+`revision` counter applied as `.id`, which used to tear the whole hierarchy down
+on every accent write and on every Settings dismissal.
+
+To confirm: open Settings from Develop, change the palette, come back, open it
+again from Tools.
 
 ## 8. Cards paid for a shadow that drew nothing
 

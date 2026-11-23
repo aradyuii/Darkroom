@@ -82,9 +82,12 @@ struct DevelopHomeView: View {
 
             Spacer(minLength: 0)
 
-            SoftGlassIconButton(systemImage: "slider.horizontal.3") {
-                appearance.presentSettings()
+            NavigationLink {
+                SettingsView()
+            } label: {
+                SoftGlassIconDisc(systemImage: "slider.horizontal.3")
             }
+            .buttonStyle(HapticButtonStyle())
             .accessibilityLabel("Settings")
         }
     }

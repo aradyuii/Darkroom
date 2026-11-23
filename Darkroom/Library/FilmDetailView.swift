@@ -73,6 +73,11 @@ struct FilmDetailView: View {
             .padding(.horizontal, 20)
             .padding(.top, 6)
             .padding(.bottom, 20)
+            // A vertical page, and only vertical. A row wider than the screen —
+            // a long developer name, a chart line — used to widen the scroll
+            // view's content, which let the whole page be dragged sideways.
+            // Pinning the content to the viewport's width removes that axis.
+            .containerRelativeFrame(.horizontal)
         }
         .background { LiquidBackdrop() }
         .safeAreaInset(edge: .bottom, spacing: 0) {

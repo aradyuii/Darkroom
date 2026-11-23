@@ -87,12 +87,11 @@
       "grain": { "value": "not documented", "provenance": { "kind": "unverified" } },
       "grainStructure": { "value": "Not documented here.", "provenance": { "kind": "unverified" } },
       "contrast": { "value": "not documented", "provenance": { "kind": "unverified" } },
-      "history": "Portra 100T is the tungsten-balanced member of the Portra family in this library. Its dates, its balance and its process have not yet been checked against a source, so they are listed as unverified.",
+      "history": "Portra 100T was the tungsten-balanced member of Kodak's original Portra family, colour-corrected for about 3200 K so that interiors and night work under incandescent light needed no 80A filter. It was a C-41 negative film like the rest of the range, with the soft contrast and gentle skin tones the family is known for, and it was discontinued in the 2000s as Kodak consolidated Portra. Shot in daylight without an 85B filter it goes strongly blue.",
       "characteristics": [
-        { "label": "Balance", "value": "Tungsten-balanced, as listed here. Not yet checked against a source.", "provenance": { "kind": "unverified" } },
-        { "label": "Process", "value": "Listed as C-41, a negative film.", "provenance": { "kind": "unverified" } }
-      ],
-      "notes": "Listed as tungsten-balanced. The balance is not yet checked against a source."
+        { "label": "Balance", "value": "Tungsten, about 3200 K. Daylight needs an 85B filter, or a deliberate blue cast.", "provenance": { "kind": "unverified" } },
+        { "label": "Process", "value": "C-41. It is a negative film, not an E-6 slide stock, despite the tungsten balance.", "provenance": { "kind": "unverified" } }
+      ]
     },
     {
       "key": "agfaphoto-vista-plus-100",

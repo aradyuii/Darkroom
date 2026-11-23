@@ -12,32 +12,23 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject private var theme = ThemeStore.shared
     @ObservedObject private var preferences = Preferences.shared
-    @Environment(\.dismiss) private var dismiss
 
     @State private var confirmingReset = false
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 26) {
-                    header
-                    designSection
-                    preferencesSection
-                    notesSection
-                }
-                .padding(20)
-                .padding(.bottom, 28)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 26) {
+                header
+                designSection
+                preferencesSection
+                notesSection
             }
-            .background { LiquidBackdrop() }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
-                        .fontWeight(.semibold)
-                }
-            }
+            .padding(20)
+            .padding(.bottom, 28)
         }
+        .background { LiquidBackdrop() }
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
         .tint(Theme.amber)
         .preferredColorScheme(.dark)
     }
