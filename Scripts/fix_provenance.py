@@ -16,6 +16,11 @@ exactly which citations changed. Every file is parsed before it is written.
 
     fix_provenance.py            report only
     fix_provenance.py --write    rewrite the files
+
+Run this where the project lives. It was written and exercised on a build
+machine, which is not where these files are kept: the reports above reflect the
+bundled JSON as it stands only when it is run against this checkout. As
+committed, the repository's own JSON has NOT had this pass applied.
 """
 
 import glob
